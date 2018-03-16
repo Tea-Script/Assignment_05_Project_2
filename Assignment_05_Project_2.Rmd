@@ -17,6 +17,8 @@ years <- c(1987:2016)
 urls <- str_c(url1, years, url2, sep = "")
 filenames <- str_c("mr", years, sep = "")
 N <- length(urls)
+
+## Formatting Data
 for (i in 1:N){
   suppressMessages(
     assign(filenames[i], read_table(urls[i], col_names = TRUE))
@@ -27,23 +29,15 @@ for (i in 1:N){
     file <- file[2:nrow(file),]
     file$YYYY <- as.numeric(file$YYYY)
   }
-  
-  
-  
-  ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY)
-  # put '19' in front of 2 digit years
-  # check that all columns are included
-  # filter down to only the 1 daily observation that you want
-  # etc etc etc
-
+  file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY)
+  file <- file %>% filter(hh==12)
     
-    
+# Combining Data 
   if(i == 1){
     MR <- file %>% select(YYYY, MM, DD, hh, ATMP, WTMP)
   }
   else{
     MR <- rbind.data.frame(MR, file %>% select(YYYY, MM, DD, hh, ATMP, WTMP))
     }
-    
 }
 ```
