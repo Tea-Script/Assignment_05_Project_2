@@ -1,6 +1,6 @@
 ---
 title: "Assignment_05"
-author: "Matthew D. Ciaramitaro, Praveen Kumar Kenderla, and Steven Tra"
+author: "Matthew D. Ciaramitaro, Praveen Kumar Kenderla, and Steven Tran"
 date: "March 21, 2018"
 output: pdf_document
 ---
@@ -9,6 +9,8 @@ output: pdf_document
 #Libraries
 library(tidyverse)
 library(stringr)
+library(dplyr)
+library(ggplot2)
 
 # Obtaining Data
 url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
@@ -40,4 +42,17 @@ for (i in 1:N){
     MR <- rbind.data.frame(MR, file %>% select(YYYY, MM, DD, hh, ATMP, WTMP))
     }
 }
+
+# Making Data Numeric
+MR$MM <- as.numeric(MR$MM)
+MR$DD <- as.numeric(MR$DD)
+MR$hh <- as.numeric(MR$hh)
+MR$ATMP <- as.numeric(MR$ATMP)
+MR$WTMP <- as.numeric(MR$WTMP)
+MR <- MR %>% filter(ATMP<99)
+
+# Making Time Series for Air Temperature
+chk <- MR %>% select(YYYY,ATMP)
+ggplot(chk)+
+  geom_line(aes(x=YYYY, y=ATMP))
 ```
