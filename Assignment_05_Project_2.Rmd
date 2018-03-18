@@ -49,10 +49,29 @@ MR$DD <- as.numeric(MR$DD)
 MR$hh <- as.numeric(MR$hh)
 MR$ATMP <- as.numeric(MR$ATMP)
 MR$WTMP <- as.numeric(MR$WTMP)
-MR <- MR %>% filter(ATMP<99)
+MR <- MR %>% 
+  filter(ATMP<99) %>% 
+  filter(WTMP<99)
 
 # Making Time Series for Air Temperature
-chk <- MR %>% select(YYYY,ATMP)
-ggplot(chk)+
-  geom_line(aes(x=YYYY, y=ATMP))
+A <- MR %>% 
+  select(YYYY,ATMP, MM, DD) %>% 
+  mutate(date=as.Date(paste(as.character(MM), "/", as.character(DD), "/", as.character(YYYY), sep=""), format = "%m/%d/%Y"))
+ggplot(data=A, aes(x=date, y=ATMP))+
+  geom_line()+
+  xlab("Year")+
+  ylab("Air Temperature")+
+  ggtitle("Air Temperature Over Time")+
+  scale_x_date(date_labels = "%Y")
+
+# Making Time Series for Water Temperature
+W <- MR %>% 
+  select(YYYY,WTMP, MM, DD) %>% 
+  mutate(date=as.Date(paste(as.character(MM), "/", as.character(DD), "/", as.character(YYYY), sep=""), format = "%m/%d/%Y"))
+ggplot(data=W, aes(x=date, y=WTMP))+
+  geom_line()+
+  xlab("Year")+
+  ylab("Water Temperature")+
+  ggtitle("Water Temperature Over Time")+
+  scale_x_date(date_labels = "%Y")
 ```
