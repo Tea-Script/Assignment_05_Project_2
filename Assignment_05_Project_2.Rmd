@@ -4,6 +4,7 @@ author: "Matthew D. Ciaramitaro, Praveen Kumar Kenderla, and Steven Tran"
 date: "March 21, 2018"
 output: pdf_document
 ---
+# Part 1
 
 ```{R}
 #Libraries
@@ -74,4 +75,16 @@ ggplot(data=W, aes(x=date, y=WTMP))+
   ylab("Water Temperature")+
   ggtitle("Water Temperature Over Time")+
   scale_x_date(date_labels = "%Y")
+
+# Testing Mean Air Temperature
+MR1987.ATMP <- as.vector((MR %>% filter(YYYY==1987))[["ATMP"]])
+MR2016.ATMP <- as.vector((MR %>% filter(YYYY==2016))[["ATMP"]])
+t.test(MR1987.ATMP, MR2016.ATMP)
+
+# Testing Mean Water Temperature
+MR1987.WTMP <- as.vector((MR %>% filter(YYYY==1987))[["WTMP"]])
+MR2016.WTMP <- as.vector((MR %>% filter(YYYY==2016))[["WTMP"]])
+t.test(MR1987.WTMP, MR2016.WTMP)
 ```
+
+# Part 2
