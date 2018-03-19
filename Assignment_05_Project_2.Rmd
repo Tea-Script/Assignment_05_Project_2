@@ -88,3 +88,35 @@ t.test(MR1987.WTMP, MR2016.WTMP)
 ```
 
 # Part 2
+
+```{R}
+library(tidyverse)
+library(readxl)
+suppressMessages(veg.1 <- read_xlsx("veg1.xlsx"))
+cnames.1 <- colnames(veg.1)
+c <- apply(veg.1, 2, n_distinct)
+e <- names(c[c>1])
+veg.2 <- select(veg.1, e)
+veg.3 <- dplyr::rename(veg.2, 
+                       Geo = `Geo Level`, 
+                       State = `State ANSI`,
+                       Data = `Data Item`,
+                       Category = `Domain Category`)
+yy <- separate(veg.3, Category, into = c("label", "quant"), sep=",")
+ru <- filter(yy, label=="RESTRICTED USE CHEMICAL")
+ru1 <- ru %>% select(label, quant) %>% unique()
+CAS <- t(as.data.frame(strsplit(ru1$quant, "=")))
+CAS[,2] <- substr(CAS[,2], 1, nchar(CAS[,2])-1)
+ru2 <- cbind(ru1, CAS[,2])
+row.names(ru2) <- 1:28
+colnames(ru2) <- c(colnames(ru2)[1:length(colnames(ru2))-1], "CAS")
+## get CAS #
+
+## find info at https://cfpub.epa.gov/ecotox/  (go to beta)
+## or
+## https://comptox.epa.gov/dashboard
+
+
+##  Toxicity > Effect Level
+#
+```
