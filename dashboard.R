@@ -84,7 +84,7 @@ header <- dashboardHeader(
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Introduction", tabName = "intro", icon = icon("anchor")),
-    menuItem("About us", tabName = "about", icon = icon("info")),
+    menuItem("About", tabName = "about", icon = icon("info")),
     menuItem("Charts and Analysis", tabName = "charts", icon = icon("bar-chart-o"), 
              menuSubItem("Temperature by Time of Day", tabName = "temperatures", icon = NULL), #include air temperature and sea temperature overlayed, option for time change
              menuSubItem("Changes in Mean Temperature", tabName = "ttest", icon = NULL) #Examines changes in mean air and mean sea temperature
