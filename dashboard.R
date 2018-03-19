@@ -4,7 +4,7 @@ library(tidyverse)
 library(stringr)
 library(dplyr)
 library(ggplot2)
-
+library(leaflet)
 gen_data <- function(){
   
   # Obtaining Data
@@ -96,12 +96,28 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems(
-    tabItem(tabName = "intro"),
+    tabItem(tabName = "intro",
+      fluidRow(
+        box(
+          p("We have analysed data from NOAA Weather Station buoy 46035 at 57.026 N 177.738 in the Pacific Ocean. Use the tabs to navigate to the charts and analysis of the data.")
+        ),
+        box(leafletOutput("buoy", height = 500))
+      )        
+    ),
+    tabItem(tabName = "about",
+      fluidRow(
+        box(width=10,
+          p("This app was created by Matthew D. Ciaramitaro as a part of the MA615 Tidy Final Project with help from Steven Tran and Praveen Kenderla. 
+            The application requires shiny, tidyverse, dplyr, shinydashboard, and leaflet. See the rest of the assignment at"),
+            a("https://github.com/PraveenKenderlagit/Assignment_05_Project_2")
+        )
+      )        
+    ),
     tabItem(tabName = "temperatures",
       fluidRow(
         box(
             title = "Time of Day",
-            sliderInput(inputId = "hour", label="Hour (military)", min=0, max=23, value=12, step=1)
+            sliderInput(inputId = "hour", label="Hour (Military Time)", min=0, max=23, value=12, step=1)
         ),
         box(p("Use the slider to view trends in water and air temperature at the buoy at the selected time during the period of 1987 to 2016." ))
       ),
@@ -121,7 +137,16 @@ body <- dashboardBody(
         )
       )
     ),
-    tabItem(tabName = "ttest"),
+    tabItem(tabName = "ttest",
+            fluidRow(
+              tabBox(title="Has the Mean Temperature Changed Since 1987?",
+                     tabPanel(title="Air Temperature", plotOutput("ttesta"), textOutput("ttexta")),
+                     tabPanel(title="Water Temperature",plotOutput("ttestw"), textOutput("ttextw"))
+              )
+            )
+            
+    ),
+    
     tabItem(tabName = "conc")
     
     
@@ -165,6 +190,7 @@ server <- function(input, output) {
     cor(A %>% select(ATMP), W %>% select(WTMP), method="pearson")
     
   })
+  output$buoy <- renderLeaflet(leaflet() %>% setView(lng=-177.738, lat=57.026, zoom = 3) %>% addMarkers(lng=-177.738, lat=57.026) %>% addTiles()) #map of buoy location
   
   
   
