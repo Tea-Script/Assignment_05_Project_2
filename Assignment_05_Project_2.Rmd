@@ -32,7 +32,7 @@ for (i in 1:N){
     file <- file[2:nrow(file),]
     file$YYYY <- as.numeric(file$YYYY)
   }
-  file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY)
+  file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY) #we add 1900 to the 2 digit years to match YYYY format
   file <- file %>% filter(hh==12)
     
 # Combining Data 
@@ -75,6 +75,10 @@ ggplot(data=W, aes(x=date, y=WTMP))+
   ylab("Water Temperature")+
   ggtitle("Water Temperature Over Time")+
   scale_x_date(date_labels = "%Y")
+
+#correlation between Air and Water Temperatures
+x <- cor(A %>% select(ATMP), W %>% select(WTMP), method="pearson")
+print(paste("testing the pearson correlation between the Air and Water temperature time series for the 12:00 PM reveals a correlation of ",x, ". This means that the changes in temperatures of air and water over the years at the location of the buoy somewhat strongly correlate."))
 
 # Testing Mean Air Temperature
 MR1987.ATMP <- as.vector((MR %>% filter(YYYY==1987))[["ATMP"]])
