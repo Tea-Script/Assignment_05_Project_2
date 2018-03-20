@@ -192,7 +192,25 @@ server <- function(input, output) {
   })
   output$buoy <- renderLeaflet(leaflet() %>% setView(lng=-177.738, lat=57.026, zoom = 3) %>% addMarkers(lng=-177.738, lat=57.026) %>% addTiles()) #map of buoy location
   
-  
+  # Testing Mean Air Temperature
+  MR1987.ATMP <- as.vector((data %>% filter(YYYY==1987))[["ATMP"]])
+  MR2016.ATMP <- as.vector((data %>% filter(YYYY==2016))[["ATMP"]])
+  #t <- t.test(MR1987.ATMP, MR2016.ATMP)
+  #range <- seq(-3,3,by=.1)
+  #cdf <- dt(range, t$parameter)
+  #output$ttesta <- renderPlot({
+  #  plot(cdf ~ range, type ="l") 
+  #  polygon(c( range[range <= t$statistic], t$statistic ),  c(cdf[range <= t$statistic], 0), col="blue") #create colored graph
+  #}) #cdf of t distribution
+  #Testing Mean Water Temperature
+  #MR1987.WTMP <- as.vector((dMR %>% filter(YYYY==1987))[["WTMP"]])
+  #MR2016.WTMP <- as.vector((dMR %>% filter(YYYY==2016))[["WTMP"]])
+  #t <- t.test(MR1987.WTMP, MR2016.WTMP)
+  #cdf <- dt(range, t$parameter)
+  #output$ttestw <- renderPlot({
+  #  plot(cdf ~ range, type ="l") 
+  #  polygon(c( range[range <= t$statistic], t$statistic ),  c(cdf[range <= t$statistic], 0), col="blue") #create colored graph
+  #}) #cdf of t distribution
   
   
   
