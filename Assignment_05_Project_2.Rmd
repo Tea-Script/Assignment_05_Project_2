@@ -32,10 +32,11 @@ for (i in 1:N){
     file <- file[2:nrow(file),]
     file$YYYY <- as.numeric(file$YYYY)
   }
-  file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY) #we add 1900 to the 2 digit years to match YYYY format
+  file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY) 
+  # Add 1900 to the 2 digit years to match YYYY format
   file <- file %>% filter(hh==12)
     
-# Combining Data 
+  # Combining Data 
   if(i == 1){
     MR <- file %>% select(YYYY, MM, DD, hh, ATMP, WTMP)
   }
@@ -96,7 +97,7 @@ t.test(MR1987.WTMP, MR2016.WTMP)
 ```{R}
 library(tidyverse)
 library(readxl)
-suppressMessages(veg.1 <- read_xlsx("veg1.xlsx"))
+veg.1 <- read_xlsx("veg1.xlsx")
 cnames.1 <- colnames(veg.1)
 c <- apply(veg.1, 2, n_distinct)
 e <- names(c[c>1])
@@ -112,7 +113,7 @@ ru1 <- ru %>% select(label, quant, Value) %>% unique()
 CAS <- t(as.data.frame(strsplit(ru1$quant, "=")))
 CAS[,2] <- substr(CAS[,2], 1, nchar(CAS[,2])-1)
 ru2 <- cbind(ru1, CAS[,2])
-row.names(ru2) <- 1:28
+row.names(ru2) <- 1:284
 colnames(ru2) <- c(colnames(ru2)[1:length(colnames(ru2))-1], "CAS")
 
 ru3 <- ru1 %>% separate (quant, c("ChemType", "ChemName"), sep = ":") %>%  mutate (Value = str_extract(Value, "^\\w+"))
