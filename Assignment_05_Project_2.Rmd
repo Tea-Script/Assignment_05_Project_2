@@ -104,12 +104,29 @@ veg.3 <- dplyr::rename(veg.2,
                        Category = `Domain Category`)
 yy <- separate(veg.3, Category, into = c("label", "quant"), sep=",")
 ru <- filter(yy, label=="RESTRICTED USE CHEMICAL")
-ru1 <- ru %>% select(label, quant) %>% unique()
+ru1 <- ru %>% select(label, quant, Value) %>% unique()
 CAS <- t(as.data.frame(strsplit(ru1$quant, "=")))
 CAS[,2] <- substr(CAS[,2], 1, nchar(CAS[,2])-1)
 ru2 <- cbind(ru1, CAS[,2])
 row.names(ru2) <- 1:28
 colnames(ru2) <- c(colnames(ru2)[1:length(colnames(ru2))-1], "CAS")
+
+ru3 <- ru1 %>% separate (quant, c("ChemType", "ChemName"), sep = ":") %>%  mutate (Value = str_extract(Value, "^\\w+"))
+
+ru4 <- unique(ru3[, c("label", "ChemType" , "ChemName", "Value")]) %>% na.omit(ru8) # Only takes the unique Chemical Names and corresponding values;
+
+ru5 <- ru4[1:5, ]  # Clean the Value NA's and makes a table with corresponding chemical names; 
+
+ToixicityData <- tibble (TestedSpecies = c("NorwayRat", "HoneyBee", "FruitMoth", "NorwayRat", "BoolWeevil" ),
+                   Effectmeasurement = c("Activity_General", "Mortality", "Mortality", "Mortality", "Mortality"),
+                    LD50dose = c(4, 7, 7, 6, 4),
+                   Dosage = c(23.3, 0.034,  0.011, 451, 0.0034),
+                   Units = c("mg/kg", "ug/ul", "ug/org", "mg/kg", "ug/org"),
+                   ObservedDurationiDays = c(0.0625, 1, 1, 1, 3)) # Rows extracted from search: 953, 190, 508, 52, 235
+
+ru6 <- as.tibble(c(ru5, ToixicityData))
+Part2 <- as.tibble(ru6)
+
 ## get CAS #
 
 ## find info at https://cfpub.epa.gov/ecotox/  (go to beta)
