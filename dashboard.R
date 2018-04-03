@@ -5,7 +5,7 @@ library(stringr)
 library(dplyr)
 library(ggplot2)
 library(leaflet)
-gen_data <- function(){
+gen_data <- function(bool=F){
   
   # Obtaining Data
   url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
@@ -27,6 +27,7 @@ gen_data <- function(){
     
     file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY) #we add 1900 to the 2 digit years to match YYYY format
   }
+  if(bool){file <- file %>% dplyr::filter(hh==12)}
   for (i in 1:N){
     # Combining Data 
     if(i == 1){
@@ -44,18 +45,20 @@ gen_data <- function(){
   MR$ATMP <- as.numeric(MR$ATMP)
   MR$WTMP <- as.numeric(MR$WTMP)
   MR <- MR %>% 
-    filter(ATMP<99) %>% 
-    filter(WTMP<99)
+    dplyr::filter(ATMP<99) %>% 
+    dplyr::filter(WTMP<99)
   return(MR)
 }
-data <- gen_data() #organized data of every hour
+datums <- gen_data() #organized data of every hour
 
 
 get_data <- function(hour){
-  return(data %>% filter(hh==hour)) #select this hour
+  return(datums %>% dplyr::filter(hh==hour)) #select this hour
 
 }
 dMR <- get_data(12)
+
+
 
 get_air_series <- function(MR){
   #returns the data for the air series to be plotted
@@ -75,6 +78,55 @@ get_water_series <- function(MR){
 }
 
 
+#bug investigation
+test <- function(){
+  
+  # Obtaining Data
+  url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
+  url2 <- ".txt.gz&dir=data/historical/stdmet/"
+  years <- c(1987:2016)
+  urls <- str_c(url1, years, url2, sep = "")
+  filenames <- str_c("mr", years, sep = "")
+  N <- length(urls)
+  
+  ## Formatting Data
+  for (i in 1:N){
+    suppressMessages(
+      assign(filenames[i], read_table(urls[i], col_names = TRUE))
+    )
+    file <- get(filenames[i])
+    colnames(file)[1] <-"YYYY"
+    if(!is.numeric(file[1,1])){
+      file <- file[2:nrow(file),]
+      file$YYYY <- as.numeric(file$YYYY)
+    }
+    file$YYYY <- ifelse(as.numeric(file$YYYY%/%100)<1, file$YYYY+1900, file$YYYY) 
+    # Add 1900 to the 2 digit years to match YYYY format
+    file <- file %>% dplyr::filter(hh==12)
+    
+    # Combining Data 
+    if(i == 1){
+      MR <- file %>% select(YYYY, MM, DD, hh, ATMP, WTMP)
+    }
+    else{
+      MR <- rbind.data.frame(MR, file %>% select(YYYY, MM, DD, hh, ATMP, WTMP))
+    }
+  }
+  
+  # Making Data Numeric
+  MR$MM <- as.numeric(MR$MM)
+  MR$DD <- as.numeric(MR$DD)
+  MR$hh <- as.numeric(MR$hh)
+  MR$ATMP <- as.numeric(MR$ATMP)
+  MR$WTMP <- as.numeric(MR$WTMP)
+  MR <- MR %>% 
+    dplyr::filter(ATMP<99) %>% 
+    dplyr::filter(WTMP<99)
+  return(MR)
+  
+  
+}
+dMR <- test()
 
 #build shiny app
 header <- dashboardHeader(
@@ -139,15 +191,24 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "ttest",
             fluidRow(
-              tabBox(title="Has the Mean Temperature Changed Since 1987?",
-                     tabPanel(title="Air Temperature", plotOutput("ttesta"), textOutput("ttexta")),
-                     tabPanel(title="Water Temperature",plotOutput("ttestw"), textOutput("ttextw"))
+              tabBox(title="Has the Mean Temperature Changed Since 1987?", width = 500,
+                     tabPanel(title="Air Temperature", plotOutput("ttesta"), "The p value of ", textOutput("ttexta"), "< .05 and indicates that there is a statistically significant difference in the means of air temperature in 1987 and 2016"),
+                     tabPanel(title="Water Temperature",plotOutput("ttestw"), "The p value of ", textOutput("ttextw"), "< .05 and indicates that there is a statistically significant difference in the means of water temperature in 1987 and 2016")
               )
             )
             
     ),
     
-    tabItem(tabName = "conc")
+    tabItem(tabName = "conc",
+      fluidRow(
+        box(width=500,
+          h1("According to our Pearson Test for Correlation, the Air Temperatures and Water Temperatures at the buoy are strongly correlated, and there is a statistically significant difference between the air and water mean temperatures of 1987 and 2016. There has been a significant increase in both temperatures since 1987.")
+          
+        )
+        
+      )        
+            
+    )
     
     
   )
@@ -193,25 +254,29 @@ server <- function(input, output) {
   output$buoy <- renderLeaflet(leaflet() %>% setView(lng=-177.738, lat=57.026, zoom = 3) %>% addMarkers(lng=-177.738, lat=57.026) %>% addTiles()) #map of buoy location
   
   # Testing Mean Air Temperature
-  MR1987.ATMP <- as.vector((data %>% filter(YYYY==1987))[["ATMP"]])
-  MR2016.ATMP <- as.vector((data %>% filter(YYYY==2016))[["ATMP"]])
-  #t <- t.test(MR1987.ATMP, MR2016.ATMP)
-  #range <- seq(-3,3,by=.1)
-  #cdf <- dt(range, t$parameter)
-  #output$ttesta <- renderPlot({
-  #  plot(cdf ~ range, type ="l") 
-  #  polygon(c( range[range <= t$statistic], t$statistic ),  c(cdf[range <= t$statistic], 0), col="blue") #create colored graph
-  #}) #cdf of t distribution
-  #Testing Mean Water Temperature
-  #MR1987.WTMP <- as.vector((dMR %>% filter(YYYY==1987))[["WTMP"]])
-  #MR2016.WTMP <- as.vector((dMR %>% filter(YYYY==2016))[["WTMP"]])
-  #t <- t.test(MR1987.WTMP, MR2016.WTMP)
-  #cdf <- dt(range, t$parameter)
-  #output$ttestw <- renderPlot({
-  #  plot(cdf ~ range, type ="l") 
-  #  polygon(c( range[range <= t$statistic], t$statistic ),  c(cdf[range <= t$statistic], 0), col="blue") #create colored graph
-  #}) #cdf of t distribution
+  MR <- dMR
+  MR1987.ATMP <- as.vector((MR %>% dplyr::filter(YYYY==1987))[["ATMP"]])
+  MR2016.ATMP <- as.vector((MR %>% dplyr::filter(YYYY==2016))[["ATMP"]])
+  t <- t.test(MR1987.ATMP, MR2016.ATMP, na.action = na.omit)
+  range <- seq(-8, 8,by=.1)
+  cdf <- dt(range, t$parameter)
+  output$ttesta <- renderPlot({
+    plot(cdf ~ range, type ="l") 
+    polygon(c( range[range <= t$statistic], t$statistic ),  c(cdf[range <= t$statistic], 0), col="blue") #create colored graph
+  }) #cdf of t distribution
+  output$ttexta <- renderText(paste(t$p.value))
   
+  
+  #Testing Mean Water Temperature
+  MR1987.WTMP <- as.vector((MR %>% dplyr::filter(YYYY==1987))[["WTMP"]])
+  MR2016.WTMP <- as.vector((MR %>% dplyr::filter(YYYY==2016))[["WTMP"]])
+  s <- t.test(MR1987.WTMP, MR2016.WTMP, na.action = na.omit)
+  cdf2 <- dt(range, s$parameter)
+  output$ttestw <- renderPlot({
+    plot(cdf2 ~ range, type ="l") 
+    polygon(c( range[range <= s$statistic], s$statistic ),  c(cdf2[range <= s$statistic], 0), col="blue") #create colored graph
+  }) #cdf of t distribution
+  output$ttextw <- renderText(paste(s$p.value))
   
   
 }

@@ -1,0 +1,12 @@
+name: MA615-HW5-2
+title: MA615-HW5-2
+username:
+account: tea-script
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 303161
+bundleId: 1277787
+url: https://tea-script.shinyapps.io/MA615-HW5-2/
+when: 1521514888.28922
+asMultiple: FALSE
+asStatic: FALSE
