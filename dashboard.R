@@ -7,6 +7,7 @@ library(ggplot2)
 library(leaflet)
 gen_data <- function(bool=F){
   
+  
   # Obtaining Data
   url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
   url2 <- ".txt.gz&dir=data/historical/stdmet/"
